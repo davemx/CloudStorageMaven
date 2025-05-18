@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.gkatzioura.maven.cloud.gcs;
+package com.gkatzioura.maven.cloud.gcs.wagon;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,10 +40,13 @@ import com.gkatzioura.maven.cloud.transfer.TransferProgress;
 import com.gkatzioura.maven.cloud.transfer.TransferProgressFileInputStream;
 import com.gkatzioura.maven.cloud.transfer.TransferProgressImpl;
 import com.gkatzioura.maven.cloud.wagon.AbstractStorageWagon;
+import com.gkatzioura.maven.cloud.wagon.PublicReadProperty;
 
 public class GoogleStorageWagon extends AbstractStorageWagon {
 
     private GoogleStorageRepository googleStorageRepository;
+    private Optional<String> keyPath;
+    private Boolean publicRepository;
 
     private static final Logger LOGGER = Logger.getLogger(GoogleStorageWagon.class.getName());
 
@@ -131,7 +135,7 @@ public class GoogleStorageWagon extends AbstractStorageWagon {
 
             LOGGER.log(Level.FINER,String.format("Opening connection for bucket %s and directory %s",bucket,directory));
 
-            googleStorageRepository = new GoogleStorageRepository(bucket, directory);
+            googleStorageRepository = new GoogleStorageRepository(keyPath ,bucket, directory, new PublicReadProperty(publicRepository));
             googleStorageRepository.connect();
             sessionListenerContainer.fireSessionLoggedIn();
             sessionListenerContainer.fireSessionOpened();
@@ -147,6 +151,22 @@ public class GoogleStorageWagon extends AbstractStorageWagon {
         googleStorageRepository.disconnect();
         sessionListenerContainer.fireSessionLoggedOff();
         sessionListenerContainer.fireSessionDisconnected();
+    }
+
+    public String getKeyPath() {
+        return keyPath.get();
+    }
+
+    public void setKeyPath(String keyPath) {
+        this.keyPath = Optional.of(keyPath);
+    }
+
+    public Boolean getPublicRepository() {
+        return publicRepository;
+    }
+
+    public void setPublicRepository(Boolean publicRepository) {
+        this.publicRepository = publicRepository;
     }
 
 }
